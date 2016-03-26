@@ -1,0 +1,143 @@
+1.
+CREATE DATABASE books;
+USE books;
+
+2.
+mysql -u root -p books < 'Books (2).sql'
+
+3. a)
+INSERT INTO Authors (authorID, name) VALUES (8, 'Džekas Londonas');
+INSERT INTO Authors (authorID, name) VALUES (9, 'Leo Angart');
+INSERT INTO Authors (authorID, name) VALUES (10, 'A.Andrijanova');
+INSERT INTO Authors (authorID, name) VALUES (11, 'Edmondo de Amicis');
+INSERT INTO Authors (authorID, name) VALUES (12, 'A.Eidintas');
+INSERT INTO Authors (authorID, name) VALUES (13, 'Salomėja Nėris');
+
+3. b)
+INSERT INTO Books (bookId, authorId, title, year) VALUES (9, 8, 'Baltoji Iltis', 1992);
+INSERT INTO Books (bookId, authorId, title, year) VALUES (10, 9, 'Tausok sveikatą dirbdamas kompiuteriu', 2006);
+INSERT INTO Books (bookId, authorId, title, year) VALUES (11, 10, 'Garsų tarimas', 1990);
+INSERT INTO Books (bookId, authorId, title, year) VALUES (12, 11, 'Širdis', 2011);
+INSERT INTO Books (bookId, authorId, title, year) VALUES (13, 12, 'Antanas Smetona', 1990);
+INSERT INTO Books (bookId, authorId, title, year) VALUES (14, 13, 'Kaip žydėjimas vyšnios', 1978);
+INSERT INTO Books (bookId, authorId, title, year) VALUES (15, 13, 'Prie didelio kelio', 1995);
+
+3. c)
+SELECT Books.bookId AS No, Authors.name AS Author, Books.title AS Title, Books.year AS Year
+FROM Books
+LEFT JOIN Authors
+ON Books.authorId=Authors.authorId;
+
+3. d)
+UPDATE Authors SET name = 'S.Vilkienė' WHERE authorId=10;
+
+3. e) su autoriais, kurie neturi knygų
+SELECT Authors.name AS Author, COUNT(Books.bookId) AS 'Number of books' 
+FROM Authors
+LEFT JOIN Books
+ON Books.authorId=Authors.authorId
+GROUP BY Authors.name;
+
+3. e) (be autorių, kurie neturi knygų)
+SELECT Authors.name AS Author, COUNT(Books.bookId) AS 'Number of books' 
+FROM Books
+LEFT JOIN Authors
+ON Books.authorId=Authors.authorId
+WHERE Books.authorId IS NOT NULL
+GROUP BY Authors.name;
+
+3. f)
+DELETE FROM Authors WHERE authorId BETWEEN 8 AND 13;
+
+3. g)
+DELETE Authors, Books 
+FROM Books
+LEFT JOIN Authors
+ON Books.authorId=Authors.authorId
+WHERE Authors.name IS NULL;
+
+4. a)
+ALTER TABLE Books
+ADD genreId INT(11);
+
+CREATE TABLE Genres (
+genreId INT(11) NOT NULL AUTO_INCREMENT,
+name VARCHAR(255) NOT NULL,
+PRIMARY KEY (genreId)
+);
+
+4. b)
+CREATE TABLE Authors_Books (
+Id INT(11) NOT NULL AUTO_INCREMENT,
+authorId INT(11) NOT NULL,
+bookId INT(11) NOT NULL,
+PRIMARY KEY (Id)
+);
+
+INSERT INTO Authors_Books (authorId, bookId)
+SELECT authorId, bookId
+FROM Books;
+
+ALTER TABLE Books
+DROP COLUMN authorId;
+
+4. c)
+INSERT INTO Genres (name) VALUES ('Scientific literature');
+INSERT INTO Genres (name) VALUES ('Novel');
+INSERT INTO Genres (name) VALUES ('Health');
+INSERT INTO Genres (name) VALUES ('Biography');
+INSERT INTO Genres (name) VALUES ('Poetry');
+
+UPDATE Books SET genreId = 1;
+UPDATE Authors SET name = TRIM(name);
+
+INSERT INTO Authors (authorId, name) VALUES (8, 'Džekas Londonas');
+INSERT INTO Books (bookId, genreId, title, year) VALUES (6, 2, 'Baltoji Iltis', 1992);
+INSERT INTO Authors_Books (Id, authorId, bookId) VALUES (6, 8, 6);
+
+INSERT INTO Authors (authorId, name) VALUES (9, 'Leo Angart');
+INSERT INTO Books (bookId, genreId, title, year) VALUES (7, 3, 'Tausok sveikatą dirbdamas kompiuteriu', 2006);
+INSERT INTO Authors_Books (Id, authorId, bookId) VALUES (7, 9, 7);
+
+INSERT INTO Authors (authorId, name) VALUES (10, 'Edmondo de Amicis');
+INSERT INTO Books (bookId, genreId, title, year) VALUES (8, 2, 'Širdis', 2011);
+INSERT INTO Authors_Books (Id, authorId, bookId) VALUES (8, 10, 8);
+
+INSERT INTO Authors (authorId, name) VALUES (11, 'A.Eidintas');
+INSERT INTO Books (bookId, genreId, title, year) VALUES (9, 4, 'Antanas Smetona', 1990);
+INSERT INTO Authors_Books (Id, authorId, bookId) VALUES (9, 11, 9);
+
+INSERT INTO Authors (authorId, name) VALUES (12, 'A.Andrijanova');
+INSERT INTO Authors (authorId, name) VALUES (13, 'S.Vilkienė');
+INSERT INTO Books (bookId, genreId, title, year) VALUES (10, 1, 'Garsų tarimas', 1990);
+INSERT INTO Authors_Books (Id, authorId, bookId) VALUES (10, 12, 10);
+INSERT INTO Authors_Books (Id, authorId, bookId) VALUES (11, 13, 10);
+
+INSERT INTO Authors (authorId, name) VALUES (14, 'Jay Greenspan');
+INSERT INTO Authors (authorId, name) VALUES (15, 'Brad Bulger');
+INSERT INTO Books (bookId, genreId, title, year) VALUES (11, 1, 'MySQL/PHP Database Applications', 2001);
+INSERT INTO Authors_Books (Id, authorId, bookId) VALUES (12, 14, 11);
+INSERT INTO Authors_Books (Id, authorId, bookId) VALUES (13, 15, 11);
+
+INSERT INTO Authors (authorId, name) VALUES (16, 'Salomėja Nėris');
+INSERT INTO Books (bookId, genreId, title, year) VALUES (12, 5, 'Kaip žydėjimas vyšnios', 1978);
+INSERT INTO Books (bookId, genreId, title, year) VALUES (13, 5, 'Prie didelio kelio', 1995);
+INSERT INTO Authors_Books (Id, authorId, bookId) VALUES (14, 16, 12);
+INSERT INTO Authors_Books (Id, authorId, bookId) VALUES (15, 16, 13);
+
+4. d)
+SELECT Books.bookId AS No, GROUP_CONCAT(Authors.name) AS Author, Books.title AS Title, Books.year AS Year, Genres.name AS Genre
+FROM Books
+LEFT JOIN Authors_Books ON Books.bookId=Authors_Books.bookId
+LEFT JOIN Authors ON Authors.authorId=Authors_Books.authorId
+LEFT JOIN Genres ON Books.genreId=Genres.genreId
+GROUP BY Title
+ORDER BY No;
+
+4. e)
+ALTER TABLE Books CONVERT TO CHARACTER SET utf8 COLLATE utf8_lithuanian_ci;
+ALTER TABLE Authors CONVERT TO CHARACTER SET utf8 COLLATE utf8_lithuanian_ci;
+
+5.
+mysqldump -u root -p books > 'db_books.sql'
+
