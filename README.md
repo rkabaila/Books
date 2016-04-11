@@ -1,2 +1,2 @@
 # Rimantas Kabaila
-# MySQL namų darbas
+# MySQL namų darbai
